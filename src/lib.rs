@@ -2,6 +2,7 @@ use wgpu::CommandBufferDescriptor;
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
+    platform::x11::WindowBuilderExtX11,
     window::{Window, WindowBuilder},
 };
 
@@ -15,6 +16,7 @@ struct State {
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
     window: Window,
+    clearColor: (f64, f64, f64, f64),
 }
 
 impl State {
@@ -81,9 +83,9 @@ impl State {
             queue,
             config,
             size,
+            clearColor: (0.1, 0.2, 0.3, 1.0),
         }
     }
-    pub async fn run() {}
 
     pub fn window(&self) -> &Window {
         &self.window
@@ -99,6 +101,13 @@ impl State {
     }
 
     fn input(&mut self, event: &WindowEvent) -> bool {
+        match event {
+            WindowEvent::CursorMoved { position, .. } => {
+                self.clearColor.0 = (position.x / (self.config.width as f64));
+                self.clearColor.1 = (position.y / (self.config.height as f64));
+            }
+            _ => {}
+        }
         false
     }
 
@@ -122,10 +131,10 @@ impl State {
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
-                            a: 1.0,
+                            r: self.clearColor.0,
+                            g: self.clearColor.1,
+                            b: self.clearColor.2,
+                            a: self.clearColor.3,
                         }),
                         store: true,
                     },
