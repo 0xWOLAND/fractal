@@ -1,6 +1,6 @@
 use anyhow::*;
 use image::{GenericImageView, RgbImage, RgbaImage};
-use ndarray::Array4;
+use ndarray::{Array3, Array4};
 
 pub struct Texture {
     pub texture: wgpu::Texture,
@@ -9,10 +9,10 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn array_to_image(arr: Array4<u8>) -> RgbaImage {
+    pub fn array_to_image(arr: Array3<u8>) -> RgbaImage {
         assert!(arr.is_standard_layout());
 
-        let (height, width, _, __) = arr.dim();
+        let (height, width, _) = arr.dim();
         let raw = arr.into_raw_vec();
 
         RgbaImage::from_raw(width as u32, height as u32, raw)
@@ -22,7 +22,7 @@ impl Texture {
     pub fn from_bytes(
         device: &wgpu::Device,
         queue: &wgpu::Queue,
-        mut bytes: Array4<u8>,
+        mut bytes: Array3<u8>,
         label: &str,
     ) -> Result<Self> {
         let img: RgbaImage = Texture::array_to_image(bytes);

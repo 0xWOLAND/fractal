@@ -1,15 +1,11 @@
-use std::{
-    cmp::{max, min},
-    mem,
-};
+use std::mem;
 
 use bytemuck;
-use ndarray::{s, Array, Array4, ArrayView};
-use wgpu::{util::DeviceExt, CommandBufferDescriptor};
+use ndarray::Array3;
+use wgpu::util::DeviceExt;
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
-    platform::x11::WindowBuilderExtX11,
     window::{Window, WindowBuilder},
 };
 
@@ -157,23 +153,48 @@ impl State {
 
         let num_indices = INDICES.len() as u32;
         let num_vertices = VERTICES.len() as u32;
-        let mut diffuse_bytes: Array4<u8> = Array4::<u8>::zeros((350, 350, 350, 4));
+        const DIM: usize = 255;
 
-        // for ((x, y, z, a), v) in diffuse_bytes.indexed_iter_mut() {
-        // *v = match a {
-        // 0 => y as u8,
-        // 1 => x as u8,
-        // 2 => z as u8,
-        // 3 => 255 as u8,
-        // _ => unreachable!(),
-        // }
-        // }
-
-        {
-            let c = 10;
-            let mut slice = diffuse_bytes.slice_mut(s![0..c, 0..c, .., ..]);
-            slice += &ArrayView::from(&[255, 255, 255, 255]);
+        let mut tmp = vec![0; DIM * DIM];
+        for (i, v) in tmp.iter_mut().enumerate() {
+            if i % 2 == 0 {
+                *v = 1;
+            }
         }
+
+        let mut tmp = tmp
+            .iter()
+            .map(|x| {
+                if *x & 1 > 0 {
+                    return vec![255, 255, 255, 255];
+                }
+                vec![0, 0, 0, 0]
+            })
+            .into_iter()
+            .flat_map(|y| y)
+            .collect::<Vec<u8>>();
+        println!("{}", tmp.len());
+        // println!("{:?}", tmp);
+
+        let mut diffuse_bytes: Array3<u8> = Array3::<u8>::zeros((DIM, DIM, 4));
+        println!("{}", diffuse_bytes.len());
+        for ((x, y, z), v) in diffuse_bytes.indexed_iter_mut() {
+            *v = match z {
+                0 => y as u8,
+                1 => x as u8,
+                2 => 0,
+                3 => 255,
+                _ => unreachable!(),
+            };
+        }
+        let mut diffuse_bytes: Array3<u8> =
+            Array3::<u8>::from_shape_vec((DIM, DIM, 4), tmp).unwrap();
+
+        // {
+        // let c = 10;
+        // let mut slice = diffuse_bytes.slice_mut(s![0..c, .., ..]);
+        // slice += &ArrayView::from(&[255, 255, 255, 255]);
+        // }
 
         let diffuse_texture =
             texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "Image").unwrap();
