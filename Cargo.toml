@@ -11,6 +11,7 @@ name = "tutorial1-window"
 path = "src/main.rs"
 
 [dependencies]
+image = "0.23"
 cfg-if = "1"
 winit = "0.28"
 env_logger = "0.10"
@@ -18,6 +19,8 @@ log = "0.4"
 wgpu = "0.16"
 pollster = "0.3"
 bytemuck = { version = "1.12", features = [ "derive" ] }
+anyhow = "1.0"
+ndarray = "0.15.6"
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
