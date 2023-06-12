@@ -173,28 +173,20 @@ impl State {
             .into_iter()
             .flat_map(|y| y)
             .collect::<Vec<u8>>();
-        println!("{}", tmp.len());
-        // println!("{:?}", tmp);
 
-        let mut diffuse_bytes: Array3<u8> = Array3::<u8>::zeros((DIM, DIM, 4));
-        println!("{}", diffuse_bytes.len());
-        for ((x, y, z), v) in diffuse_bytes.indexed_iter_mut() {
-            *v = match z {
-                0 => y as u8,
-                1 => x as u8,
-                2 => 0,
-                3 => 255,
-                _ => unreachable!(),
-            };
-        }
-        let mut diffuse_bytes: Array3<u8> =
-            Array3::<u8>::from_shape_vec((DIM, DIM, 4), tmp).unwrap();
+        // let mut diffuse_bytes: Array3<u8> = Array3::<u8>::zeros((DIM, DIM, 4));
 
-        // {
-        // let c = 10;
-        // let mut slice = diffuse_bytes.slice_mut(s![0..c, .., ..]);
-        // slice += &ArrayView::from(&[255, 255, 255, 255]);
+        // for ((x, y, z), v) in diffuse_bytes.indexed_iter_mut() {
+        //     *v = match z {
+        //         0 => y as u8,
+        //         1 => x as u8,
+        //         2 => 0,
+        //         3 => 255,
+        //         _ => unreachable!(),
+        //     };
         // }
+
+        let diffuse_bytes: Array3<u8> = Array3::<u8>::from_shape_vec((DIM, DIM, 4), tmp).unwrap();
 
         let diffuse_texture =
             texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "Image").unwrap();
